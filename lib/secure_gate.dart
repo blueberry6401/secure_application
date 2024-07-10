@@ -41,14 +41,10 @@ class SecureGate extends StatefulWidget {
 class _SecureGateState extends State<SecureGate>
     with SingleTickerProviderStateMixin {
   bool _lock = false;
-  late AnimationController _gateVisibility;
   SecureApplicationController? _secureApplicationController;
 
   @override
   void initState() {
-    _gateVisibility =
-        AnimationController(vsync: this, duration: kThemeAnimationDuration * 2)
-          ..addListener(_handleChange);
     SecureApplicationNative.opacity(widget.opacity);
 
     super.initState();
@@ -75,10 +71,8 @@ class _SecureGateState extends State<SecureGate>
   void _sercureNotified() {
     if (_lock == false && _secureApplicationController!.locked == true) {
       _lock = true;
-      _gateVisibility.value = 1;
     } else if (_lock == true && _secureApplicationController!.locked == false) {
       _lock = false;
-      _gateVisibility.animateBack(0).orCancel;
     }
   }
 
@@ -91,7 +85,6 @@ class _SecureGateState extends State<SecureGate>
   @override
   void dispose() {
     _secureApplicationController!.removeListener(_sercureNotified);
-    _gateVisibility.dispose();
     super.dispose();
   }
 
@@ -100,19 +93,6 @@ class _SecureGateState extends State<SecureGate>
     return Stack(
       children: <Widget>[
         widget.child,
-        if (_gateVisibility.value != 0)
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                  sigmaX: widget.blurr * _gateVisibility.value,
-                  sigmaY: widget.blurr * _gateVisibility.value),
-              child: Container(
-                decoration: BoxDecoration(
-                    color: Colors.grey.shade200
-                        .withOpacity(widget.opacity * _gateVisibility.value)),
-              ),
-            ),
-          ),
         if (_lock && widget.lockedBuilder != null)
           widget.lockedBuilder!(context, _secureApplicationController),
       ],
